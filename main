@@ -1,0 +1,218 @@
+#include <bits/stdc++.h>
+#define fi first
+#define se second
+using namespace std;
+const long double EPS = 1e-9;
+const int N18 = 18 + 1;
+const int N72 = 72 + 1;
+vector <vector <long double> > sistem;
+map <pair<vector<int>, int>, int> m18[N18], m72[N72];
+
+
+map <pair<vector<int>, int>, int> Sum(map <pair<vector<int>, int>, int> a, map <pair<vector<int>, int>, int> b) {
+    for (auto it = b.begin(); it != b.end(); ++it)
+        a[(*it).first] += (*it).second;
+    return a;
+}
+
+map <pair<vector<int>, int>, int> Minus(map <pair<vector<int>, int>, int> a, map <pair<vector<int>, int>, int> b) {
+    for (auto it = b.begin(); it != b.end(); ++it)
+        a[(*it).first] -= (*it).second;
+    return a;
+}
+
+map <pair<vector<int>, int>, int> mult(map <pair<vector<int>, int>, int> a, vector <pair<int, int> > v) {
+    int i, j;
+    map <pair<vector<int>, int>, int> ans;
+    for (auto it = a.begin(); it != a.end(); ++it)
+    for (j = 0; j < v.size(); ++j) {
+        vector <int> c = (*it).fi.fi;
+        c.push_back(v[j].first);
+        sort(v.begin(), v.end());
+        ans[{c, (*it).fi.se}] += (*it).second * v[j].second;
+    }
+    return ans;
+}
+
+int count_num_v(vector <int> a, int x) {
+    int i, j;
+    int ans = 0;
+    for (i = 0; i < a.size(); ++i)
+    if (a[i] == x)
+        ++ans;
+    return ans;
+}
+
+vector <int> del_from_v(vector <int> a, int x) {
+    int i, j;
+    for (int i = 0; i < a.size(); ++i)
+    if (a[i] == x) {
+        for (j = i + 1; j < a.size(); ++j)
+            a[j - 1] = a[j];
+        a.resize(a.size() - 1);
+        break;
+    }
+    return a;
+}
+
+map <pair<vector<int>, int>, int> del(map <pair<vector<int>, int>, int> a, int x, int y) {
+    int i, j;
+    map <pair<vector<int>, int>, int> ans;
+    for (i = 3; i >= 1; --i)
+    for (auto it = a.begin(); it != a.end(); ++it)
+    if (count_num_v((*it).fi.fi, x) == i) {
+        vector <int> c = del_from_v((*it).fi.fi, x);
+        ans[{c, (*it).fi.se}] += (*it).second;
+        c.push_back(y);
+        sort(c.begin(), c.end());
+        a[{c, (*it).fi.se}] += (*it).second;
+        a[(*it).first] = 0;
+    }
+    return ans;
+}
+
+int convfroms(string s) {
+    if (s[0] == 's')
+        return s[1] - '0';
+    else
+        return s[1] - '0' + 3;
+}
+
+string convtos(int x) {
+    if (x <= 3) {
+        string s = "s";
+        s += ('0' + x);
+        return s;
+    } else {
+        string s = "t";
+        s += ('0' + x - 3);
+        return s;
+    }
+}
+
+string comb(vector <int> v) {
+    string ans = "";
+    for (int i = 0; i < v.size(); ++i)
+        ans += convtos(v[i]);
+    return ans;
+}
+
+void write_mn(map <pair<vector<int>, int>, int> a) {
+    bool flag = 0;
+    for (auto it = a.begin(); it != a.end(); ++it)
+    if (abs((*it).second) >= EPS) {
+        if (flag && (*it).second > 0)
+            cout << '+';
+        cout << (*it).second << 'p' << (*it).fi.se << '*' << comb((*it).fi.fi);
+        flag = 1;
+    }
+    cout << endl;
+}
+
+void del(vector <long double> &v, long double k) {
+    for (int i = 0; i < v.size(); ++i)
+        v[i] /= k;
+}
+
+void mius(vector <long double> &a, vector <long double> &b, long double c) {
+    for (int i = 0; i < a.size(); ++i)
+        a[i] -= b[i] * c;
+}
+
+void write(vector < vector<long double> > a) {
+    for (int i = 0; i < a.size(); ++i) {
+        for (int j = 0; j < a[i].size(); ++j)
+            cout << a[i][j]  << ' ';
+        cout << endl;
+    }
+}
+
+int gauss (vector < vector<long double> > a) {
+	int n = (int) a.size();
+	int m = (int) a[0].size() - 1;
+    int i, j = 0, cnt = 0;
+    bool can = true;
+    for (i = 0; i < n; ++i) {
+        if (j == m)
+            break;
+        for (int l = i + 1; l < n; ++l)
+        if (abs(a[l][j]) > EPS) {
+            swap(a[l], a[i]);
+            break;
+        }
+        if (abs(a[i][j]) < EPS) {
+            ++j;
+            ++cnt;
+            --i;
+        } else {
+            del(a[i], a[i][j]);
+            for (int l = i + 1; l < n; ++l)
+            if (abs(a[l][j]) > EPS)
+                mius(a[l], a[i], a[l][j]);
+            ++j;
+        }
+    }
+    cnt += m - j;
+    while (i < n) {
+        if (abs(a[i][m]) > EPS)
+            return 0;
+        ++i;
+    }
+    if (cnt != 0)
+        return 1e9;
+    else
+        return 1;
+}
+
+int a[N18][5];
+
+int main() {
+    int i, j, k, n, kp, l, x, y, t;
+    freopen("72vertex_polynomial.txt", "r", stdin);
+    cin >> kp;
+    for (i = 1; i <= 72; ++i)
+    for (j = 1; j <= 5; ++j)
+    for (l = 0; l < kp; ++l) {
+        cin >> x;
+        m72[i][{{j}, l}] = x;
+    }
+    freopen("18vertex_count.txt", "r", stdin);
+    for (i = 1; i <= 18; ++i) {
+        for (j = 0; j < 4; ++j)
+            cin >> a[i][j];
+        for (j = 1; j <= 3; ++j) {
+            cin >> x >> y;
+            for (l = 0; l < 4; ++l)
+                m72[a[i][j]] = mult(m72[a[i][j]], {{x, 1}, {y, -1}});
+        }
+        m18[i] = Minus(Sum(m72[a[i][0]], m72[a[i][3]]), Sum(m72[a[i][1]], m72[a[i][2]]));
+        for (j = 1; j <= 2; ++j) {
+            cin >> x >> y;
+            m18[i] = del(m18[i], x, y);
+        }
+    }
+    freopen("18vertex_polynomial.txt", "r", stdin);
+    for (i = 1; i <= 18; ++i) {
+        for (j = 1; j <= 5; ++j)
+        for (l = j + 1; l <= 5; ++l) {
+            cin >> x;
+            vector <long double> g(kp + 1);
+            for (t = 0; t < kp; ++kp)
+            if (abs(m18[i][{{j, l}, t}]) >= EPS)
+                g[t] = m18[i][{{j, l}, t}];
+            g[kp] = x;
+            sistem.push_back(g);
+        }
+        for (j = 1; j <= 6; ++j)
+        for (l = j + 1; l <= 6; ++l) {
+            cin >> x;
+            vector <long double> g(kp + 1);
+            for (t = 0; t < kp; ++kp)
+            if (abs(m18[i][{{j, l}, t}]) >= EPS)
+                g[t] = m18[i][{{j, l}, t}];
+            g[kp] = x;
+            sistem.push_back(g);
+        }
+    }
+    cout << gauss(sistem);
+}
