@@ -133,7 +133,9 @@ void writef(string s, int a, int b) {
     for (int i = 0; i < 72; ++i)
     if (m[i].s == mp[u].s && m[i].x1.first == mp[u].x && m[i].x1.second == mp[u].y) {
         ++cnt;
-        if (cnt > 1)
+        if (cnt == 2 || cnt == 3)
+            cout << "- ";
+        if (cnt == 4)
             cout << "+ ";
         cout << "b(" + m[i].s << (char) (m[i].x1.first + '1') << (char) (m[i].x1.second + '1') << ", x" << (char) (m[i].x + '1') << ", y" << (char) (m[i].y + '1') << ", x'" << (char) (m[i].x_ + '1') << ", y'" << (char) (m[i].y_ + '1') << ") * ";
         for (int j = 0; j < e2[i].size(); ++j)
@@ -176,5 +178,5 @@ int main() {
     e1 = build_tree1(), e2 = build_tree2();
     invs(e1);
     invs(e2);
-    writef("y", 3, 2);
+    writef("y", 1, 2);
 }
