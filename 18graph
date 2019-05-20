@@ -1,0 +1,193 @@
+#include <bits/stdc++.h>
+#include "combo.h"
+using namespace std;
+const long double EPS = 1e-9;
+const long long INF = 1e18;
+const int N = 1e3;
+int st[N], pn[N];
+vector <vector <long double > > v;
+vector <long double > ans;
+int c[18][N][N], top = 0;
+
+void del(vector <long double> &v, long double k) {
+    for (int i = 0; i < v.size(); ++i)
+        v[i] /= k;
+}
+
+void mius(vector <long double> &a, vector <long double> &b, long double c) {
+    for (int i = 0; i < a.size(); ++i)
+        a[i] -= b[i] * c;
+}
+
+void write(vector < vector<long double> > a) {
+    for (int i = 0; i < a.size(); ++i) {
+        for (int j = 0; j < a[i].size(); ++j)
+            cout << a[i][j]  << ' ';
+        cout << endl;
+    }
+}
+
+int gauss (vector < vector<long double> > a, vector<long double> & ans) {
+	int n = (int) a.size();
+	int m = (int) a[0].size() - 1;
+    int i, j = 0, cnt = 0;
+    bool can = true;
+    for (i = 0; i < n; ++i)
+        st[i] = -1;
+    for (i = 0; i < n; ++i) {
+        if (j == m)
+            break;
+        for (int l = i + 1; l < n; ++l)
+        if (abs(a[l][j]) > EPS) {
+            swap(a[l], a[i]);
+            break;
+        }
+        if (abs(a[i][j]) < EPS) {
+            ++j;
+            ++cnt;
+            --i;
+        } else {
+            st[i] = j;
+            pn[j] = i;
+            del(a[i], a[i][j]);
+            for (int l = i + 1; l < n; ++l)
+            if (abs(a[l][j]) > EPS)
+                mius(a[l], a[i], a[l][j]);
+            ++j;
+        }
+    }
+    cnt += m - j;
+    while (i < n) {
+        if (abs(a[i][m]) > EPS)
+            return 0;
+        ++i;
+    }
+    for (i = 0; i < n; ++i)
+    if (st[i] != -1) {
+        for (j = 0; j < i; ++j)
+        if (abs(a[j][st[i]]) > EPS)
+            mius(a[j], a[i], a[j][st[i]]);
+    }
+    ans.resize(n);
+    cout << cnt << endl;
+    for (i = 0; i < m; ++i)
+    if (abs(a[pn[i]][i]) > EPS)
+        ans[i] = -a[pn[i]][58];
+    else
+        ans[i] = 0;
+    if (cnt != 0)
+        return 1e9;
+    else {
+        return 1;
+    }
+}
+
+void should_del(int a, int b, int x, int y) {
+    int i, j;
+    if (x > y)
+        swap(x, y);
+    for (i = 1; i <= 6; ++i)
+    for (j = i; j <= 6; ++j)
+    if ((i != x && i != y && j != x && j != y)) {
+        vector <long double> g(top + 1);
+        g[c[a][i][j]] = 1;
+        g[c[b][i][j]] = -1;
+        v.push_back(g);
+    }
+    for (i = 1; i <= 6; ++i)
+    if (i != x && i != y) {
+        int a1 = i, b1 = x;
+        int a2 = i, b2 = y;
+        if (a1 > b1)
+            swap(a1, b1);
+        if (a2 > b2)
+            swap(a2, b2);
+        vector <long double> g(top + 1);
+        g[c[a][a1][b1]] = 1;
+        g[c[a][a2][b2]] = 1;
+        g[c[b][a1][b1]] = -1;
+        g[c[b][a2][b2]] = -1;
+        v.push_back(g);
+    }
+    vector <long double> g(top + 1);
+    g[c[a][x][x]] = 1;
+    g[c[a][x][y]] = 1;
+    g[c[a][y][y]] = 1;
+    g[c[b][x][x]] = -1;
+    g[c[b][x][y]] = -1;
+    g[c[b][y][y]] = -1;
+    v.push_back(g);
+}
+
+int convfroms(string s) {
+    if (s[0] == 's')
+        return s[1] - '0';
+    else
+        return s[1] - '0' + 3;
+}
+
+string convtos(int x) {
+    if (x <= 3) {
+        string s = "s";
+        s += ('0' + x);
+        return s;
+    } else {
+        string s = "t";
+        s += ('0' + x - 3);
+        return s;
+    }
+}
+
+int comp(int a, int b) {
+    for (int i = 1; i <= 3; ++i)
+    if (i != a && i != b)
+        return i;
+}
+
+
+int main() {
+    int i, j, k, n;
+    freopen("input_kurs.txt", "r", stdin);
+    ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    top = 0;
+    for (i = 0; i < 18; ++i) {
+        for (int l = 1; l <= 6; ++l)
+        for (int p = l; p <= 6; ++p) {
+            c[i][l][p] = top;
+            ++top;
+        }
+    }
+    cin >> n;
+    for (i = 0; i < 4; i += 3) {
+        for (int l = 1; l <= 6; ++l)
+        for (int p = l; p <= 6; ++p) {
+            vector <long double> g(top + 1);
+            g[c[i][l][p]] = 1;
+            v.push_back(g);
+        }
+    }
+    for (i = 0; i < 3; ++i)
+    for (j = 0; j < 3; ++j)
+    for (int l = 0; l < 3; ++l)
+    for (int p = 0; p < 3; ++p)
+    if (i != p && j != l) {
+        int a = 3 * i + j, b = 3 * l + p + 9;
+        string s1 = "t";
+        s1 += (char) ('0' + comp(i + 1, p + 1));
+        string s2 = "s";
+        s2 += (char) ('0' + comp(j + 1, l + 1));
+        int x = convfroms(s1), y = convfroms(s2);
+        should_del(a, b, x, y);
+    }
+    vector <long double> g(top + 1);
+    for (i = 0; i < n; ++i) {
+        int a, b;
+        string s1, s2;
+        cin >> a >> b >> s1 >> s2;
+        int x = convfroms(s1), y = convfroms(s2);
+        should_del(a, b, x, y);
+    }
+    cout << gauss(v, ans);
+    cout << endl;
+
+}
