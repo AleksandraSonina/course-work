@@ -1,0 +1,316 @@
+#include <bits/stdc++.h>
+using namespace std;
+const long double EPS = 1e-9;
+const long long INF = 1e18;
+const int N = 2e4;
+int st[N];
+vector <vector <long double > > v;
+vector <int> tp[73];
+vector <long double > ans;
+int c[150][7], top = 0, pn[N];
+int prn[2000][100];
+
+void del(vector <long double> &v, long double k) {
+    for (int i = 0; i < v.size(); ++i)
+        v[i] /= k;
+}
+
+void mius(vector <long double> &a, vector <long double> &b, long double c) {
+    for (int i = 0; i < a.size(); ++i)
+        a[i] -= b[i] * c;
+}
+
+void write(vector < vector<long double> > a) {
+    for (int i = 0; i < a.size(); ++i) {
+        for (int j = 0; j < a[i].size(); ++j)
+            cout << a[i][j]  << ' ';
+        cout << endl;
+    }
+}
+
+vector <int> mn;
+int H[N][100];
+
+int gauss (vector < vector<long double> > a, vector<long double> & ans) {
+	int n = (int) a.size();
+	int m = (int) a[0].size() - 1;
+    int i, j = 0, cnt = 0;
+    bool can = true;
+    for (i = 0; i < m; ++i)
+        pn[i] = -1;
+    for (i = 0; i < n; ++i)
+        st[i] = -1;
+    for (i = 0; i < n; ++i) {
+        if (j == m)
+            break;
+        for (int l = i + 1; l < n; ++l)
+        if (abs(a[l][j]) > EPS) {
+            swap(a[l], a[i]);
+            break;
+        }
+        if (abs(a[i][j]) < EPS) {
+            mn.push_back(j);
+            ++j;
+            ++cnt;
+            --i;
+        } else {
+            st[i] = j;
+            pn[j] = i;
+            del(a[i], a[i][j]);
+            for (int l = i + 1; l < n; ++l)
+            if (abs(a[l][j]) > EPS)
+                mius(a[l], a[i], a[l][j]);
+            ++j;
+        }
+    }
+    cnt += m - j;
+    while (j < m) {
+        mn.push_back(j);
+        ++j;
+    }
+    for (i = 0; i < n; ++i)
+    if (st[i] != -1) {
+        for (j = 0; j < i; ++j) {
+        if (abs(a[j][st[i]]) > EPS)
+            mius(a[j], a[i], a[j][st[i]]);
+        }
+    }
+    for (i = 0; i < m; ++i)
+    if (pn[i] >= 0)
+        for (j = 0; j < mn.size(); ++j)
+            H[i][j] = -a[pn[i]][mn[j]];
+    for (i = 0; i < mn.size(); ++i)
+        H[mn[i]][i] = 1;
+    if (cnt != 0)
+        return 1e9;
+    else {
+        ans.resize(n);
+        for (i = 0; i < n; ++i)
+            ans[i] = a[i][m];
+        return 1;
+    }
+}
+
+void should_del(int a, int b, int x, int y) {
+    vector <int> t(6);
+    int i, j, l;
+    if (x > y)
+        swap(x, y);
+    ++t[x];
+    if (y == 6) {
+        for (int i = 1; i <= 5; ++i)
+        if (i <= 3)
+            --t[i];
+        else
+            ++t[i];
+    } else
+        --t[y];
+    int k;
+    for (int i = 1; i <= 5; ++i)
+    if (t[i] == 1) {
+        k = i;
+        break;
+    }
+    for (i = 1; i <= 5; ++i)
+    if (i != k) {
+        vector <long double> g(top + 1);
+        g[c[a][i]] = 1;
+        g[c[b][i]] = -1;
+        if (i <= 3) {
+            g[c[a][6]] = 1;
+            g[c[b][6]] = -1;
+        } else {
+            g[c[a][6]] = -1;
+            g[c[b][6]] = 1;
+        }
+        g[c[a][k]] = -t[i];
+        g[c[b][k]] = t[i];
+        if (k <= 3) {
+            g[c[a][6]] -= t[i];
+            g[c[b][6]] += t[i];
+        } else {
+            g[c[a][6]] += t[i];
+            g[c[b][6]] -= t[i];
+        }
+        v.push_back(g);
+    }
+}
+
+int convfroms(string s) {
+    if (s[0] == 's')
+        return s[1] - '0';
+    else
+        return s[1] - '0' + 3;
+}
+
+string convtos(int x) {
+    if (x <= 3) {
+        string s = "s";
+        s += ('0' + x);
+        return s;
+    } else {
+        string s = "t";
+        s += ('0' + x - 3);
+        return s;
+    }
+}
+
+int comp(int a, int b) {
+    for (int i = 1; i <= 3; ++i)
+    if (i != a && i != b)
+        return i;
+}
+
+void try_solve() {
+    int i, j;
+    for (i = 1; i <= 36; ++i) {
+        int x = 3 + comp(tp[i][1], tp[i][2]);
+        int y = comp(tp[i][3], tp[i][4]);
+        for (j = 1; j <= 6; ++j)
+        if (j != x && j != y) {
+            vector <long double> g(top + 1);
+            g[c[i][j]] = 1;
+            v.push_back(g);
+        }
+        vector <long double> g(top + 1);
+        g[c[i][x]] = 1;
+        g[c[i][y]] = 1;
+        v.push_back(g);
+    }
+    for (i = 37; i <= 72; ++i)
+    for (j = 1; j <= 6; ++j) {
+        vector <long double> g(top + 1);
+        g[c[i][j]] = 1;
+        v.push_back(g);
+    }
+}
+
+
+
+int main() {
+    int i, j, k, n, top1, l, y;
+    //freopen("input_kurs.txt", "r", stdin);
+    freopen("72vertex_polynomial.txt", "w", stdout);
+    ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    top = 0, top1 = 0;
+    for (i = 1; i <= 3; ++i)
+    for (j = 1; j <= 3; ++j)
+    for (l = 1; l <= 3; ++l)
+    for (k = 1; k <= 3; ++k)
+    if (i != j && k != l) {
+        ++top1;
+        tp[top1] = {0, i, j, l, k};
+        for (y = 1; y <= 6; ++y)
+            c[top1][y] = top++;
+    }
+    for (i = 1; i <= 3; ++i)
+    for (j = 1; j <= 3; ++j)
+    for (l = 1; l <= 3; ++l)
+    for (k = 1; k <= 3; ++k)
+    if (i != j && k != l) {
+        ++top1;
+        tp[top1] = {1, i, j, l, k};
+        for (y = 1; y <= 6; ++y)
+            c[top1][y] = top++;
+    }
+    for (i = 1; i <= 36; ++i)
+    for (j = 37; j <= 72; ++j)
+    if (tp[i][1] == tp[j][1] && tp[i][2] == tp[j][2] && tp[i][3] == tp[j][3] && tp[i][4] == tp[j][4]) {
+        string s = "s", t = "t";
+        s += (char) (comp(tp[i][3], tp[i][4]) + '0');
+        t += (char) (comp(tp[i][1], tp[i][2]) + '0');
+        should_del(i, j, convfroms(t), convfroms(s));
+    }
+    int cnt[73];
+    for (i = 1;  i<= 72; ++i)
+        cnt[i] = 0;
+    for (i = 1; i <= top1; ++i)
+    for (j = i + 1; j <= top1; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] != tp[j][1] && tp[i][2] != tp[j][2] && tp[i][3] == tp[j][3] && tp[i][4] == tp[j][4] && tp[i][1] == tp[j][2] && tp[i][2] == tp[j][1]) {
+        string a = "t", b = "t";
+        a += (char) (tp[i][1] + '0');
+        b += (char) (tp[i][2] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    for (i = 1; i <= top1; ++i)
+    for (j = i + 1; j <= top1; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] == tp[j][1] && tp[i][2] == tp[j][2] && tp[i][3] != tp[j][3] && tp[i][4] != tp[j][4] && tp[i][3] == tp[j][4] && tp[i][4] == tp[j][3]) {
+        string a = "s", b = "s";
+        a += (char) (tp[i][3] + '0');
+        b += (char) (tp[i][4] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    for (i = 1; i <= 72; ++i)
+    for (j = i + 1; j <= 72; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] != tp[j][1] && tp[i][2] == tp[j][2] && tp[i][3] == tp[j][3] && tp[i][4] == tp[j][4]) {
+        string a = "t", b = "t";
+        a += (char) (tp[i][1] + '0');
+        b += (char) (tp[j][1] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    for (i = 1; i <= 72; ++i)
+    for (j = i + 1; j <= 72; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] == tp[j][1] && tp[i][2] != tp[j][2] && tp[i][3] == tp[j][3] && tp[i][4] == tp[j][4]) {
+        string a = "t", b = "t";
+        a += (char) (tp[i][2] + '0');
+        b += (char) (tp[j][2] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    for (i = 1; i <= 72; ++i)
+    for (j = i + 1; j <= 72; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] == tp[j][1] && tp[i][2] == tp[j][2] && tp[i][3] != tp[j][3] && tp[i][4] == tp[j][4]) {
+        string a = "s", b = "s";
+        a += (char) (tp[i][3] + '0');
+        b += (char) (tp[j][3] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    for (i = 1; i <= 72; ++i)
+    for (j = i + 1; j <= 72; ++j)
+    if (tp[i][0] == tp[j][0] && tp[i][1] == tp[j][1] && tp[i][2] == tp[j][2] && tp[i][3] == tp[j][3] && tp[i][4] != tp[j][4]) {
+        string a = "s", b = "s";
+        a += (char) (tp[i][4] + '0');
+        b += (char) (tp[j][4] + '0');
+        should_del(i, j, convfroms(a), convfroms(b));
+        ++cnt[i];
+        ++cnt[j];
+    }
+    //try_solve();
+    {
+        vector <long double> g(top + 1);
+        g[c[3][1]] = 1;
+        g[c[3][6]] = 1;
+        g[c[5][1]] = -1;
+        g[c[5][6]] = -1;
+        v.push_back(g);
+    }
+    gauss(v, ans);
+    if(0) {
+        cout << mn.size() << endl;
+        for (i = 1; i <= 72; ++i) {
+            for (j = 1; j <= 5; ++j)
+            for (int l = 0; l < mn.size(); ++l)
+            if (j <= 3)
+                H[c[i][j]][l] += H[c[i][6]][l];
+            else
+                H[c[i][j]][l] -= H[c[i][6]][l];
+        }
+        for (i = 1; i <= 72; ++i) {
+        for (int l = 1; l <= 5; ++l)
+        for (j = 0; j < mn.size(); ++j)
+            cout << H[c[i][l]][j] << ' ';
+            cout << endl;
+        }
+        cout << endl;
+    }
+}
+
