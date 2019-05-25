@@ -29,7 +29,14 @@ void write(vector < vector<long double> > a) {
 }
 
 vector <int> mn;
-int H[N][100];
+long double H[N][100];
+
+int cmp(long double x) {
+    if (x > EPS)
+        return x + 0.5;
+    else
+        return x - 0.5;
+}
 
 int gauss (vector < vector<long double> > a, vector<long double> & ans) {
 	int n = (int) a.size();
@@ -75,6 +82,8 @@ int gauss (vector < vector<long double> > a, vector<long double> & ans) {
             mius(a[j], a[i], a[j][st[i]]);
         }
     }
+    //cout << a[pn[c[3][6]]][430] << endl;
+    //exit(1);
     for (i = 0; i < m; ++i)
     if (pn[i] >= 0)
         for (j = 0; j < mn.size(); ++j)
@@ -285,32 +294,33 @@ int main() {
         ++cnt[j];
     }
     //try_solve();
-    {
-        vector <long double> g(top + 1);
-        g[c[3][1]] = 1;
-        g[c[3][6]] = 1;
-        g[c[5][1]] = -1;
-        g[c[5][6]] = -1;
-        v.push_back(g);
-    }
     gauss(v, ans);
-    if(0) {
-        cout << mn.size() << endl;
+    vector <int> gp(mn.size());
+    int tp2 = 0;
+    for (i = 0; i < mn.size(); ++i)
+    if (mn[i] % 6 != 5)
+        gp[i] = ++tp2;
+    if(1) {
+        cout << tp2 << endl;
         for (i = 1; i <= 72; ++i) {
             for (j = 1; j <= 5; ++j)
-            for (int l = 0; l < mn.size(); ++l)
-            if (j <= 3)
-                H[c[i][j]][l] += H[c[i][6]][l];
-            else
-                H[c[i][j]][l] -= H[c[i][6]][l];
+            for (int l = 0; l < mn.size(); ++l) {
+                if (j <= 3)
+                    H[c[i][j]][l] += H[c[i][6]][l];
+                else
+                    H[c[i][j]][l] -= H[c[i][6]][l];
+                H[c[i][j]][l] *= 2;
+            }
         }
         for (i = 1; i <= 72; ++i) {
-        for (int l = 1; l <= 5; ++l)
-        for (j = 0; j < mn.size(); ++j)
-            cout << H[c[i][l]][j] << ' ';
+            for (l = 1; l <= 5; ++l)
+            for (j = 0; j < mn.size(); ++j)
+                if (mn[j] % 6 != 5)
+                    cout << cmp(H[c[i][l]][j]) << ' ';
             cout << endl;
         }
-        cout << endl;
     }
 }
+
+
 
